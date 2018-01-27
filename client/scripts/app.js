@@ -1,7 +1,7 @@
 // YOUR CODE HERE:
 // http://parse.sfm8.hackreactor.com/ 
 
-var app = {};
+var app = {server: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages'};
 
 app.init = function() {
   // pull messages in lobby onto the DOM
@@ -10,21 +10,22 @@ app.init = function() {
   // app.fetch('http://parse.sfm8.hackreactor.com/chatterbox/classes/messages') ?
   // app.renderMessage(messageObj) for all of them
   //debugger;
-  var requestObj = app.fetch('http://parse.sfm8.hackreactor.com/chatterbox/classes/messages/');
-  console.log(requestObj);
+  // var requestObj = app.fetch('http://parse.sfm8.hackreactor.com/chatterbox/classes/messages/');
+  // console.log('STORE TO VAR :', requestObj);
   // var results = requestObj.res
 //   _.each(results, function(messponseJSON.results;
 //     if (messageObj.roomname === 'lobby') {
 //       app.renderMessage(messageObj);
 //     }
 //   });
+  app.fetch(this.server);
 };
 
 app.send = function(messageObj) {
   $.ajax(
     {
       // This is the url you should use to communicate with the parse API server.
-      url: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages',
+      url: this.server,
       type: 'POST',
       data: messageObj,
       contentType: 'application/json',
@@ -40,18 +41,19 @@ app.send = function(messageObj) {
 };
 
 app.fetch = function(url) {
-  return $.ajax(
+  $.ajax(
     {
       // This is the url you should use to communicate with the parse API server.
-      url: url,
+      url: this.server + '?where={"createdAt":{"$gte":{"__type":"Date","iso":"2018-01-01T18:02:52.249Z"}}}',
       type: 'GET',
-      contentType: 'application/json',
-      success: function (data) {
-        console.log('chatterbox: Message sent');
+      success: function (data) {      
+        _.each(data.results, function(messageObj) {
+          app.renderMessage(messageObj);
+        });
       },
       error: function (data) {
         // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
-        console.error('chatterbox: Failed to send message', data);
+        console.error('chatterbox: Failed to retrieve data', data);
       }
     }
   );
