@@ -4,21 +4,7 @@
 var app = {server: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages'};
 
 app.init = function() {
-  // pull messages in lobby onto the DOM
-  // go to server
-  // find messages for lobby 
-  // app.fetch('http://parse.sfm8.hackreactor.com/chatterbox/classes/messages') ?
-  // app.renderMessage(messageObj) for all of them
-  //debugger;
-  // var requestObj = app.fetch('http://parse.sfm8.hackreactor.com/chatterbox/classes/messages/');
-  // console.log('STORE TO VAR :', requestObj);
-  // var results = requestObj.res
-//   _.each(results, function(messponseJSON.results;
-//     if (messageObj.roomname === 'lobby') {
-//       app.renderMessage(messageObj);
-//     }
-//   });
-  app.fetch(this.server);
+  app.fetch(this.server + '?where={"createdAt":{"$gte":{"__type":"Date","iso":"2018-01-01T18:02:52.249Z"}}}');
 };
 
 app.send = function(messageObj) {
@@ -27,7 +13,7 @@ app.send = function(messageObj) {
       // This is the url you should use to communicate with the parse API server.
       url: this.server,
       type: 'POST',
-      data: messageObj,
+      data: JSON.stringify(messageObj),
       contentType: 'application/json',
       success: function (data) {
         console.log('chatterbox: Message sent');
@@ -44,7 +30,7 @@ app.fetch = function(url) {
   $.ajax(
     {
       // This is the url you should use to communicate with the parse API server.
-      url: this.server + '?where={"createdAt":{"$gte":{"__type":"Date","iso":"2018-01-01T18:02:52.249Z"}}}',
+      url: url || this.server,
       type: 'GET',
       success: function (data) {      
         _.each(data.results, function(messageObj) {
@@ -87,20 +73,26 @@ $(document).on('click', '.username', function(event) {
 });
 
 app.handleSubmit = function() {
+  var messageObj = {};
+  // set username
+  messageObj.username = location.search.slice(10);
+  // set text
+  messageObj.text = $('#message').val();
+  // set roomname
+  messageObj.roomname = 'lobby';
+  console.log(messageObj);
   
+  app.renderMessage(messageObj)
+  app.send(messageObj);
 };
 
-$(document).on('submit', '#send', function(event) {
-  app.handleSubmit();
-  // var messageObj = {};
-  // // set username
-  // messageObj.username = location.search.slice(10);
-  // // set text
-  // messageObj.text = $('#message').val();
-  // // set roomname
-  // messageObj.roomname = 'lobby';
-  
-  // app.send(messageObj);
+$( "#target" ).submit(function( event ) {
+  alert( "Handler for .submit() called." );
+  event.preventDefault();
+});
+
+$(document).on('click', '#send', function(event) {
+    app.handleSubmit();
 });
 
 // why doesn't   this work?
