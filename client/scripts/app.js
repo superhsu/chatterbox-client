@@ -82,17 +82,12 @@ app.handleSubmit = function() {
   messageObj.roomname = 'lobby';
   console.log(messageObj);
   
-  app.renderMessage(messageObj)
+  app.renderMessage(messageObj);
   app.send(messageObj);
 };
 
-$( "#target" ).submit(function( event ) {
-  alert( "Handler for .submit() called." );
-  event.preventDefault();
-});
-
 $(document).on('click', '#send', function(event) {
-    app.handleSubmit();
+  app.handleSubmit();
 });
 
 // why doesn't   this work?
