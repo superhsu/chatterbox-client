@@ -95,8 +95,10 @@ app.renderRoom = function(room) {
   $('#roomSelect').append($room);
 };
 
-app.handleUsernameClick = function() {
-  
+app.handleUsernameClick = function(friendName) {
+  var $name = $('<div class="friend"></div>');
+  $name.text(friendName);
+  $('.friendsList').append($name);
 };
 
 app.handleSubmit = function() {
@@ -131,11 +133,16 @@ $(document).ready(function() {
     // app.fetch(room)  
   });
   
-  $(document).on('click', '.username', function(event) {
-    app.handleUsernameClick();
+  $(document).on('click', '.chat', function(event) {
+    var friend = $(this).find('.username').text();
+    if (!friendStorage.includes(friend)) {
+      app.handleUsernameClick(friend);
+      friendStorage.push(friend);
+    }
   });
 });
 
+var friendStorage = []; 
 // INITIALIZE
 app.init();
 
