@@ -5,7 +5,34 @@ var app = {server: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/message
 // '?where={"createdAt":{"$gte":{"__type":"Date","iso":"2018-01-01T18:02:52.249Z"}}}
 
 app.init = function() {
-  app.fetch();
+  $.ajax(
+    {
+      // This is the url you should use to communicate with the parse API server.
+      url: this.server,
+      type: 'GET',
+      data: {order: '-createdAt'},
+      success: function (data) {
+        var rooms = ['lobby'];      
+        _.each(data.results, function(messageObj) {
+          var room = messageObj.roomname;
+          if (!rooms.includes(room) && room !== '') {
+            rooms.push(room);
+          }
+          
+          app.renderMessage(messageObj);  
+        });
+        
+        // for every rooms el, push <option> onto DOM
+        for (var i = 0; i < rooms.length; i++) {
+          app.renderRoom(rooms[i]);
+        }
+      },
+      error: function (data) {
+        // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
+        console.error('chatterbox: Failed to retrieve data', data);
+      }
+    }
+  );
 };
 
 app.send = function(messageObj) {
@@ -27,28 +54,19 @@ app.send = function(messageObj) {
   );
 };
 
-app.fetch = function(url) {
+app.fetch = function(whereObj) { 
   $.ajax(
     {
       // This is the url you should use to communicate with the parse API server.
-      url: url || this.server,
+      url: this.server,
       type: 'GET',
-      data: {order: '-createdAt'},
-      success: function (data) {
-        var rooms = [];      
+      data: {order: '-createdAt', where: whereObj},
+      success: function (data) {     
         _.each(data.results, function(messageObj) {
-          var room = messageObj.roomname;
-          if (!rooms.includes(room) && room !== '') {
-            rooms.push(room);
-          }
-          
           app.renderMessage(messageObj);  
         });
         
         // for every rooms el, push <option> onto DOM
-        for (var i = 0; i < rooms.length; i++) {
-          app.renderRoom(rooms[i]);
-        }
       },
       error: function (data) {
         // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
@@ -81,10 +99,6 @@ app.handleUsernameClick = function() {
   
 };
 
-$(document).on('click', '.username', function(event) {
-  app.handleUsernameClick();
-});
-
 app.handleSubmit = function() {
   var messageObj = {};
   // set username
@@ -99,13 +113,29 @@ app.handleSubmit = function() {
   app.send(messageObj);
 };
 
-$(document).on('click', '#send', function(event) {
-  app.handleSubmit();
+$(document).ready(function() {
+  $(document).on('click', '#send', function(event) {
+    app.handleSubmit();
+  });
+
+
+  $('#roomSelect').change(function() {
+    // app.fetch only messages with roomname = what was selected
+    app.clearMessages();
+    var room = $( 'select option:selected' ).text();
+    app.fetch({roomname: room});
+    
+    
+    // clear messages 
+    // render messages with roomname = room
+    // app.fetch(room)  
+  });
+  
+  $(document).on('click', '.username', function(event) {
+    app.handleUsernameClick();
+  });
 });
 
-// why doesn't   this work?
-// $('#send').on('submit', function(event) {
-//   app.handleSubmit();
-// });
-
+// INITIALIZE
 app.init();
+
