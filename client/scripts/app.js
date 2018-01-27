@@ -2,9 +2,10 @@
 // http://parse.sfm8.hackreactor.com/ 
 
 var app = {server: 'http://parse.sfm8.hackreactor.com/chatterbox/classes/messages'};
+// '?where={"createdAt":{"$gte":{"__type":"Date","iso":"2018-01-01T18:02:52.249Z"}}}
 
 app.init = function() {
-  app.fetch(this.server + '?where={"createdAt":{"$gte":{"__type":"Date","iso":"2018-01-01T18:02:52.249Z"}}}');
+  app.fetch();
 };
 
 app.send = function(messageObj) {
@@ -32,10 +33,22 @@ app.fetch = function(url) {
       // This is the url you should use to communicate with the parse API server.
       url: url || this.server,
       type: 'GET',
-      success: function (data) {      
+      data: {order: '-createdAt'},
+      success: function (data) {
+        var rooms = [];      
         _.each(data.results, function(messageObj) {
-          app.renderMessage(messageObj);
+          var room = messageObj.roomname;
+          if (!rooms.includes(room) && room !== '') {
+            rooms.push(room);
+          }
+          
+          app.renderMessage(messageObj);  
         });
+        
+        // for every rooms el, push <option> onto DOM
+        for (var i = 0; i < rooms.length; i++) {
+          app.renderRoom(rooms[i]);
+        }
       },
       error: function (data) {
         // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
